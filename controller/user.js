@@ -22,7 +22,7 @@ exports.addEmployee=async(req,res,next)=>{
        
       console.log(req.user.employee);
        
-       const response= await req.user.createEmployee({id,name,section,Designation,Address})
+       const response= await req.user.createEmployee({id,name,section,Designation,Address,userId: req.user.id})
         
         res.status(201).json({message:response,success:true});
         
@@ -46,14 +46,13 @@ Employee.findAll({ where : { userId: req.user.id}}).then(employee => {
 
 exports.deleteEmployee=async(req,res,next)=>{
     try{
-        const id=req.params.id;
+        const employeeid=req.params.employeeid;
        if(isStringInvalid(id))
        {
         return  res.status(500).json({message:'something went wrong',success:false})
        }
-       
-        const user= await Employee.findOne({where:{id: employeeid, userId: req.user.id}})
-        const response=await Expense.destroy({where:{id: employeeid, userId: req.user.id}})
+    
+        const response=await Employee.destroy({where:{id: employeeid, userId: req.user.id}})
         
         if(response===0){
            return  res.status(401).json({message:"Employee does not Belongs to User",success:false});
