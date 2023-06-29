@@ -23,16 +23,10 @@ exports.addEmployee=async(req,res,next)=>{
       console.log(req.user.employee);
        
        const response= await req.user.createEmployee({id,name,section,Designation,Address})
-
-
-        await req.user.update({totalemployee:totalEmployee});
         
-        await t.commit();
-        
-        res.status(201).json({message:response,success:true,totalEmployee:totalEmployee});
+        res.status(201).json({message:response,success:true});
         
     } catch(err) {
-         await t.rollback();
         console.log(err);
         res.status(500).json({message:"Something went wrong",success:false})
     }
@@ -41,16 +35,9 @@ exports.addEmployee=async(req,res,next)=>{
 exports.getEmployee=async(req,res,next)=>{
 
     try{
-
-
-        const employees = req.user.employees;
-
-        
-       
-       const employee = await req.user.getEmployee();
-      
-       
-    }
+Employee.findAll({ where : { userId: req.user.id}}).then(employee => {
+        return res.status(200).json({employees, success: true})
+    })
     catch(err){
 
         res.status(500).json({message:err,success:false});
@@ -58,7 +45,6 @@ exports.getEmployee=async(req,res,next)=>{
 }
 
 exports.deleteEmployee=async(req,res,next)=>{
-    const t= await sequelize.transaction();
     try{
         const id=req.params.id;
        if(isStringInvalid(id))
@@ -66,24 +52,17 @@ exports.deleteEmployee=async(req,res,next)=>{
         return  res.status(500).json({message:'something went wrong',success:false})
        }
        
-        const user= await Employee.findOne({where:{id:id}})
-        const response=await Expense.destroy({where:{id:id},transaction:t})
+        const user= await Employee.findOne({where:{id: employeeid, userId: req.user.id}})
+        const response=await Expense.destroy({where:{id: employeeid, userId: req.user.id}})
         
-
-        await req.user.update({employee:Employee});
-
-        
-    
         if(response===0){
            return  res.status(401).json({message:"Employee does not Belongs to User",success:false});
         }
-        await t.commit();
         res.status(200).json({message:response,success:true,employee:employee});
       
     }
     catch(err){
         console.log(err)
-        await t.rollback();
         res.status(500).json({message:err,success:false});
 
 
